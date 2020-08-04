@@ -9,7 +9,11 @@ lerna-changelog
 [travis-badge]: https://img.shields.io/travis/lerna/lerna-changelog/master.svg
 [travis-badge-url]: https://travis-ci.org/lerna/lerna-changelog
 
-PR-based changelog generator with monorepo support
+PR-based changelog generator with monorepo support.
+
+Forked from [lerna/lerna-changelog](https://github.com/lerna/lerna-changelog) that supports kinds of repositories.
+
+
 
 
 Install
@@ -111,6 +115,18 @@ The supported options are:
 
 - `repo`: Your "org/repo" on GitHub
   (automatically inferred from the `package.json` file)
+
+  use Object option to support another repo more than github
+
+```json
+{
+  "repo": {
+    "repo": "org/repo",
+    "domain": "github.com",
+    "protocol": "https"
+  }
+}
+```
 
 - `nextVersion`: Title for unreleased commits
   (e.g. `Unreleased`)
