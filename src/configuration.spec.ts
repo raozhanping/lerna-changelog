@@ -4,6 +4,7 @@ const path = require("path");
 
 import { findRepoFromPkg, fromPath } from "./configuration";
 import ConfigurationError from "./configuration-error";
+import { tmpdir } from "os";
 
 describe("Configuration", function() {
   describe("fromPath", function() {
@@ -24,7 +25,7 @@ describe("Configuration", function() {
 
       const result = fromPath(tmpDir);
       expect(result.nextVersion).toEqual("next");
-      expect(result.repo).toEqual("foo/bar");
+      expect(result.repo).toMatchObject({ repo: "foo/bar", protocol: "https", domain: "github.com" });
     });
 
     it("reads the configuration from 'package.json'", function() {
@@ -34,7 +35,7 @@ describe("Configuration", function() {
 
       const result = fromPath(tmpDir);
       expect(result.nextVersion).toEqual("next");
-      expect(result.repo).toEqual("foo/bar");
+      expect(result.repo).toMatchObject({ repo: "foo/bar", protocol: "https", domain: "github.com" });
     });
 
     it("prefers 'package.json' over 'lerna.json'", function() {
@@ -50,7 +51,16 @@ describe("Configuration", function() {
 
       const result = fromPath(tmpDir);
       expect(result.nextVersion).toEqual("v1.0.0-package.0");
-      expect(result.repo).toEqual("foo/package");
+      expect(result.repo).toMatchObject({ repo: "foo/package", protocol: "https", domain: "github.com" });
+    });
+
+    it("reads the configuration typed Object from 'lerna.json'", function() {
+      fs.writeJsonSync(path.join(tmpDir, "lerna.json"), {
+        changelog: { repo: { repo: "foo/lerna/obj", protocol: "https", domain: "github.com" }, nextVersion: "next" },
+      });
+      const result = fromPath(tmpDir);
+      expect(result.nextVersion).toEqual("next");
+      expect(result.repo).toMatchObject({ repo: "foo/lerna/obj", protocol: "https", domain: "github.com" });
     });
 
     it("throws ConfigurationError if neither 'package.json' nor 'lerna.json' exist", function() {

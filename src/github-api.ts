@@ -2,6 +2,7 @@ const path = require("path");
 
 import ConfigurationError from "./configuration-error";
 import fetch from "./fetch";
+import { Configuration, RepoOption } from "./configuration";
 
 export interface GitHubUserResponse {
   login: string;
@@ -24,17 +25,11 @@ export interface GitHubIssueResponse {
   };
 }
 
-export interface Options {
-  repo: string;
-  rootPath: string;
-  cacheDir?: string;
-}
-
 export default class GithubAPI {
   private cacheDir: string | undefined;
   private auth: string;
 
-  constructor(config: Options) {
+  constructor(config: Configuration) {
     this.cacheDir = config.cacheDir && path.join(config.rootPath, config.cacheDir, "github");
     this.auth = this.getAuthToken();
     if (!this.auth) {
@@ -42,16 +37,16 @@ export default class GithubAPI {
     }
   }
 
-  public getBaseIssueUrl(repo: string): string {
-    return `https://github.com/${repo}/issues/`;
+  public getBaseIssueUrl(repo: RepoOption): string {
+    return `${repo.protocol}://${repo.domain}/${repo}/issues/`;
   }
 
-  public async getIssueData(repo: string, issue: string): Promise<GitHubIssueResponse> {
-    return this._fetch(`https://api.github.com/repos/${repo}/issues/${issue}`);
+  public async getIssueData(repo: RepoOption, issue: string): Promise<GitHubIssueResponse> {
+    return this._fetch(`${repo.protocol}://api.${repo.domain}/repos/${repo.repo}/issues/${issue}`);
   }
 
-  public async getUserData(login: string): Promise<GitHubUserResponse> {
-    return this._fetch(`https://api.github.com/users/${login}`);
+  public async getUserData(repo: RepoOption, login: string): Promise<GitHubUserResponse> {
+    return this._fetch(`${repo.protocol}://api.${repo.domain}/users/${login}`);
   }
 
   private async _fetch(url: string): Promise<any> {

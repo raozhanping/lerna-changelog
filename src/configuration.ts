@@ -6,13 +6,18 @@ const hostedGitInfo = require("hosted-git-info");
 import ConfigurationError from "./configuration-error";
 
 export interface Configuration {
-  repo: string;
+  repo: RepoOption;
   rootPath: string;
   labels: { [key: string]: string };
   ignoreCommitters: string[];
   cacheDir?: string;
   nextVersion: string | undefined;
   nextVersionFromMetadata?: boolean;
+}
+export interface RepoOption {
+  repo: String | undefined;
+  protocol: "http" | "https";
+  domain: String;
 }
 
 export interface ConfigLoaderOptions {
@@ -32,10 +37,17 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
 
   // Step 2: fill partial config with defaults
   let { repo, nextVersion, labels, cacheDir, ignoreCommitters } = config;
+  const _repo = <unknown>repo;
+  let repoOption = <RepoOption>{ protocol: "https", domain: "github.com", repo: _repo };
 
-  if (!repo) {
-    repo = findRepo(rootPath);
-    if (!repo) {
+  if (isObject(_repo)) {
+    repoOption = Object.assign(repoOption, _repo);
+  }
+  if (isString(_repo)) {
+    repoOption.repo = <string>_repo;
+  } else if (!_repo) {
+    repoOption.repo = findRepo(rootPath);
+    if (!repoOption.repo) {
       throw new ConfigurationError('Could not infer "repo" from the "package.json" file.');
     }
   }
@@ -70,7 +82,7 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
   }
 
   return {
-    repo,
+    repo: repoOption,
     nextVersion,
     rootPath,
     labels,
@@ -123,4 +135,11 @@ export function findRepoFromPkg(pkg: any): string | undefined {
   if (info && info.type === "github") {
     return `${info.user}/${info.project}`;
   }
+}
+
+function isObject(o: any) {
+  return Object.prototype.toString.call(o) === "[object Object]";
+}
+function isString(s: any) {
+  return typeof s === "string";
 }

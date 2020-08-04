@@ -1,7 +1,7 @@
 const pMap = require("p-map");
 
 import progressBar from "./progress-bar";
-import { Configuration } from "./configuration";
+import { Configuration, RepoOption } from "./configuration";
 import findPullRequestId from "./find-pull-request-id";
 import * as Git from "./git";
 import GithubAPI, { GitHubUserResponse } from "./github-api";
@@ -108,7 +108,7 @@ export default class Changelog {
       // check if the current committer should be kept or not.
       const shouldKeepCommiter = login && !this.ignoreCommitter(login);
       if (login && shouldKeepCommiter && !committers[login]) {
-        committers[login] = await this.github.getUserData(login);
+        committers[login] = await this.github.getUserData(this.config.repo, login);
       }
     }
 
