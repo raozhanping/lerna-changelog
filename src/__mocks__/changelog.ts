@@ -4,7 +4,7 @@ const Changelog = require.requireActual("../changelog").default;
 
 const defaultConfig = {
   rootPath: "../",
-  repo: { protocol: "https", domain: "github.com", repo: "lerna/lerna-changelog" },
+  repo: { protocol: "https", domain: "github.com", name: "lerna/lerna-changelog" },
   labels: {
     "Type: New Feature": ":rocket: New Feature",
     "Type: Breaking Change": ":boom: Breaking Change",

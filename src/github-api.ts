@@ -3,6 +3,7 @@ const path = require("path");
 import ConfigurationError from "./configuration-error";
 import fetch from "./fetch";
 import { Configuration, RepoOption } from "./configuration";
+import { string } from "yargs";
 
 export interface GitHubUserResponse {
   login: string;
@@ -25,6 +26,10 @@ export interface GitHubIssueResponse {
   };
 }
 
+export interface GitService {
+  [_: string]: any;
+}
+
 export default class GithubAPI {
   private cacheDir: string | undefined;
   private auth: string;
@@ -38,22 +43,61 @@ export default class GithubAPI {
   }
 
   public getBaseIssueUrl(repo: RepoOption): string {
-    return `${repo.protocol}://${repo.domain}/${repo}/issues/`;
+    return this.request("issues", repo);
   }
 
   public async getIssueData(repo: RepoOption, issue: string): Promise<GitHubIssueResponse> {
-    return this._fetch(`${repo.protocol}://api.${repo.domain}/repos/${repo.repo}/issues/${issue}`);
+    return this.request("issueData", repo, issue);
   }
 
   public async getUserData(repo: RepoOption, login: string): Promise<GitHubUserResponse> {
-    return this._fetch(`${repo.protocol}://api.${repo.domain}/users/${login}`);
+    return this.request("userData", repo, login);
+  }
+
+  private request(request: string, repo: RepoOption, ...args: any) {
+    const service = this.resolveService(repo.type || "github");
+    return service[request].apply(null, [repo].concat(args));
+  }
+
+  private resolveService(type: "github" | "gitlab"): GitService {
+    const serviceMap = {
+      github: <GitService>{
+        issues: (repo: RepoOption) => `https://github.com/${repo.name}/issues`,
+        issueData: (repo: RepoOption, issue: string) =>
+          this._fetch(`https://api.github.com/repos/${repo.name}/issues/${issue}`),
+        userData: (repo: RepoOption, login: string) => this._fetch(`https://api.github.com/users/${login}`),
+      },
+      gitlab: <GitService>{
+        issues: (repo: RepoOption) => `${repo.protocol}://${repo.domain}/${repo.name}/-/issues/`,
+        issueData: (repo: RepoOption, issue: string) =>
+          this._fetch(
+            `${repo.protocol}://${repo.domain}/api/v4/projects/${repo.name?.replace(/\//g, "%2F")}/issues/${issue}`
+          ).then(res => ({
+            ...res,
+            number: res.iid,
+            labels: res.labels.map((name: string) => ({ name })),
+            user: {
+              login: res.author.username,
+              html_url: res.author.web_url,
+            },
+          })),
+        userData: (repo: RepoOption, login: string) =>
+          this._fetch(`${repo.protocol}://${repo.domain}/api/v4/users?username=${login}`).then(res => {
+            const user = res[0];
+            if (!user) return { login, name: login, html_for: `${repo.protocol}://${repo.domain}/${login}` };
+            return { ...user, login: user.username, html_url: user.web_url };
+          }),
+      },
+    };
+
+    return serviceMap[type];
   }
 
   private async _fetch(url: string): Promise<any> {
     const res = await fetch(url, {
       cacheManager: this.cacheDir,
       headers: {
-        Authorization: `token ${this.auth}`,
+        Authorization: `bearer ${this.auth}`,
       },
     });
     const parsedResponse = await res.json();

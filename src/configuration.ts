@@ -15,7 +15,8 @@ export interface Configuration {
   nextVersionFromMetadata?: boolean;
 }
 export interface RepoOption {
-  repo: String | undefined;
+  type: "github" | "gitlab";
+  name: String | undefined;
   protocol: "http" | "https";
   domain: String;
 }
@@ -37,18 +38,18 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
 
   // Step 2: fill partial config with defaults
   let { repo, nextVersion, labels, cacheDir, ignoreCommitters } = config;
-  const _repo = <unknown>repo;
-  let repoOption = <RepoOption>{ protocol: "https", domain: "github.com", repo: _repo };
+  const name = <unknown>repo;
+  let repoOption = <RepoOption>{ type: "github", protocol: "https", domain: "github.com", name };
 
-  if (isObject(_repo)) {
-    repoOption = Object.assign(repoOption, _repo);
+  if (isObject(name)) {
+    repoOption = Object.assign(repoOption, name);
   }
-  if (isString(_repo)) {
-    repoOption.repo = <string>_repo;
-  } else if (!_repo) {
-    repoOption.repo = findRepo(rootPath);
-    if (!repoOption.repo) {
-      throw new ConfigurationError('Could not infer "repo" from the "package.json" file.');
+  if (isString(name)) {
+    repoOption.name = <string>name;
+  } else if (!name) {
+    repoOption.name = findRepo(rootPath);
+    if (!repoOption.name) {
+      throw new ConfigurationError('Could not infer "repo.name" from the "package.json" file.');
     }
   }
 
