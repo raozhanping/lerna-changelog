@@ -121,9 +121,10 @@ The supported options are:
 ```json
 {
   "repo": {
-    "repo": "org/repo",
-    "domain": "github.com",
-    "protocol": "https"
+    "type": "github", // default, and you can use "gitlab"
+    "repo": "org/repo", // required
+    "protocol": "https", // default
+    "domain": "github.com" // default
   }
 }
 ```

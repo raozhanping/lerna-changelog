@@ -1,24 +1,26 @@
 {
-  "name": "lerna-changelog",
-  "version": "1.0.1",
-  "description": "Generate a changelog for a lerna monorepo",
+  "name": "@ricann/changelog",
+  "version": "0.0.1",
+  "description": "Generate a changelog for kinds of monorepoes",
   "keywords": [
     "changelog",
+    "github",
+    "gitlab",
     "lerna"
   ],
-  "homepage": "https://github.com/lerna/lerna-changelog#readme",
+  "homepage": "https://github.com/raozhanping/lerna-changelog#readme",
   "bugs": {
-    "url": "https://github.com/lerna/lerna-changelog/issues"
+    "url": "https://github.com/raozhanping/lerna-changelog/issues"
   },
   "license": "MIT",
-  "author": "Bo Borgerson <gigabo@gmail.com>",
+  "author": "raozhanping <raozhanping@gmail.com>",
   "main": "index.js",
   "bin": {
     "lerna-changelog": "./bin/cli.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lerna/lerna-changelog.git"
+    "url": "git+https://github.com/raozhanping/lerna-changelog.git"
   },
   "scripts": {
     "build": "yarn clean && tsc",

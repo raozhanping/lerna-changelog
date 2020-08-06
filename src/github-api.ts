@@ -60,6 +60,7 @@ export default class GithubAPI {
   }
 
   private resolveService(type: "github" | "gitlab"): GitService {
+    // FIXME: Use abstract class
     const serviceMap = {
       github: <GitService>{
         issues: (repo: RepoOption) => `https://github.com/${repo.name}/issues`,
